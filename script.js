@@ -5,7 +5,7 @@ const MAX_GUESTS = 4;
 /* Gezegen bazlı fiyat (şimdilik hepsi 1500) — sonra tek tek değiştirebilirsin */
 const PLANET_PRICES = {
   sun: 1500,
-  moon: 1500,
+  star: 1500,
   ship: 1500,
   antim: 1500,
   mercury: 1500,
@@ -65,7 +65,7 @@ let selectedPlanet = null;
 /* ====== Gezegenler (kart kapak görselleri) ====== */
 const TINY_PLANETS = [
   { id:"sun",   name:"Güneş",       mini:"Merkez", cls:"planet-sun",   cover:"img/gunes.png" },
-  { id:"moon",  name:"Ay",          mini:"Yoldaş", cls:"planet-moon",  cover:"img/yildiz.png" },
+  { id:"star",  name:"Yıldız",      mini:"Yoldaş", cls:"planet-star",  cover:"img/yildiz.png" },
   { id:"ship",  name:"Uzay Gemisi", mini:"Geçit",  cls:"planet-ship",  cover:"img/uzay-gemisi.png" },
   { id:"antim", name:"Antimadde",   mini:"Eşik",   cls:"planet-antim", cover:"img/antimadde.png" },
 
