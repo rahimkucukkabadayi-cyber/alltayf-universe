@@ -1,1 +1,119 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ALLTAYF STAY — Rezervasyon</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="bar">
+    <div class="wrap bar-inner">
+      <div class="bar-left">
+        <div class="bar-title">ALLTAYF STAY</div>
+        <div class="bar-sub">Gezegen seç → fotoğraflar → tarih + kişi → ödeme</div>
+      </div>
+      <a class="bar-link" href="index.html">← Ana Sayfa</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-title">Gezegenini Seç</div>
+      <div class="hero-desc">Tiny house gezegenini seçince 4 foto + rezervasyon paneli açılır.</div>
+    </section>
+
+    <section class="grid10" id="planetGrid" aria-label="Gezegenler"></section>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <div class="modal-title" id="mTitle">Gezegen</div>
+          <button class="x" id="mClose">Kapat</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Sol: 4 foto -->
+          <div class="gallery">
+            <div class="mainpic" id="mainPic"></div>
+            <div class="thumbs" id="thumbs"></div>
+          </div>
+
+          <!-- Sağ: Form -->
+          <form class="form" id="form">
+            <div class="row2">
+              <div class="field">
+                <label>Giriş Tarihi</label>
+                <input type="date" id="checkin" required>
+              </div>
+              <div class="field">
+                <label>Çıkış Tarihi</label>
+                <input type="date" id="checkout" required>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label>Kişi Sayısı</label>
+                <select id="guests" required>
+                  <option value="1">1</option><option value="2" selected>2</option>
+                  <option value="3">3</option><option value="4">4</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Telefon</label>
+                <input id="phone" type="tel" placeholder="05xx..." required>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label>Ad Soyad</label>
+                <input id="fullname" type="text" placeholder="Ad Soyad" required>
+              </div>
+              <div class="field">
+                <label>E-posta</label>
+                <input id="email" type="email" placeholder="mail@..." required>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="field">
+                <label>TC Kimlik No</label>
+                <input id="tc" type="text" inputmode="numeric" maxlength="11" placeholder="11 hane" required>
+              </div>
+              <div class="field">
+                <label>Adres</label>
+                <input id="address" type="text" placeholder="İl/İlçe/Mahalle..." required>
+              </div>
+            </div>
+
+            <div class="summary">
+              <div class="sum-left">
+                <div class="muted">Toplam Tutar</div>
+                <div class="total" id="total">0 TL</div>
+                <div class="muted" id="calcNote">Kişi başı gecelik 1.500 TL</div>
+              </div>
+              <button class="pay" type="submit">Kapıyı Aç (Ödeme Yap)</button>
+            </div>
+
+            <div class="warn" id="warn">Tarih seçince toplam otomatik hesaplanır.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer class="foot">
+      <span>© <span id="y"></span> Alltayf Stay</span>
+      <a href="https://wa.me/905438495887" target="_blank" rel="noopener">WhatsApp</a>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+  <script>document.getElementById("y").textContent=new Date().getFullYear();</script>
+</body>
+</html>
 
