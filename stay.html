@@ -6,6 +6,7 @@
   <title>ALLTAYF STAY — Rezervasyon</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="bg"></div>
 
@@ -28,65 +29,67 @@
     <section class="grid10" id="planetGrid" aria-label="Gezegenler"></section>
 
     <!-- Modal -->
-    <div class="modal" id="modal">
-      <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal" id="modal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mTitle">
         <div class="modal-head">
           <div class="modal-title" id="mTitle">Gezegen</div>
-          <button class="x" id="mClose">Kapat</button>
+          <button class="x" id="mClose" type="button" aria-label="Kapat">Kapat</button>
         </div>
 
         <div class="modal-body">
           <!-- Sol: 4 foto -->
           <div class="gallery">
-            <div class="mainpic" id="mainPic"></div>
-            <div class="thumbs" id="thumbs"></div>
+            <div class="mainpic" id="mainPic" aria-label="Ana fotoğraf"></div>
+            <div class="thumbs" id="thumbs" aria-label="Fotoğraf küçük resimleri"></div>
           </div>
 
           <!-- Sağ: Form -->
-          <form class="form" id="form">
+          <form class="form" id="form" autocomplete="on">
             <div class="row2">
               <div class="field">
-                <label>Giriş Tarihi</label>
+                <label for="checkin">Giriş Tarihi</label>
                 <input type="date" id="checkin" required>
               </div>
               <div class="field">
-                <label>Çıkış Tarihi</label>
+                <label for="checkout">Çıkış Tarihi</label>
                 <input type="date" id="checkout" required>
               </div>
             </div>
 
             <div class="row2">
               <div class="field">
-                <label>Kişi Sayısı</label>
+                <label for="guests">Kişi Sayısı</label>
                 <select id="guests" required>
-                  <option value="1">1</option><option value="2" selected>2</option>
-                  <option value="3">3</option><option value="4">4</option>
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
                 </select>
               </div>
               <div class="field">
-                <label>Telefon</label>
-                <input id="phone" type="tel" placeholder="05xx..." required>
+                <label for="phone">Telefon</label>
+                <input id="phone" type="tel" inputmode="tel" placeholder="05xx..." required>
               </div>
             </div>
 
             <div class="row2">
               <div class="field">
-                <label>Ad Soyad</label>
+                <label for="fullname">Ad Soyad</label>
                 <input id="fullname" type="text" placeholder="Ad Soyad" required>
               </div>
               <div class="field">
-                <label>E-posta</label>
+                <label for="email">E-posta</label>
                 <input id="email" type="email" placeholder="mail@..." required>
               </div>
             </div>
 
             <div class="row2">
               <div class="field">
-                <label>TC Kimlik No</label>
-                <input id="tc" type="text" inputmode="numeric" maxlength="11" placeholder="11 hane" required>
+                <label for="tc">TC Kimlik No</label>
+                <input id="tc" type="text" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" placeholder="11 hane" required>
               </div>
               <div class="field">
-                <label>Adres</label>
+                <label for="address">Adres</label>
                 <input id="address" type="text" placeholder="İl/İlçe/Mahalle..." required>
               </div>
             </div>
@@ -113,7 +116,8 @@
   </main>
 
   <script src="script.js"></script>
-  <script>document.getElementById("y").textContent=new Date().getFullYear();</script>
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
-
