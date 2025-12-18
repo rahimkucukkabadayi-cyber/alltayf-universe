@@ -102,7 +102,7 @@ body{
   position:relative;
 }
 
-/* Görseli öldürmesin diye daha hafif overlay */
+/* Hafif overlay */
 .card10-img::after{
   content:"";
   position:absolute;
@@ -116,6 +116,22 @@ body{
   font-size:12px; color:rgba(255,255,255,.75);
   border-top:1px solid rgba(255,255,255,.06);
 }
+
+/* Güneş kartı */
+.card10.sun{border-color:rgba(255,220,120,.28)}
+.card10.sun:hover{border-color:rgba(255,220,120,.42)}
+
+/* INDEX: Tayf görselleri */
+.tayf-stay   { background-image: url("img/alltayf-stay.png"); }
+.tayf-farm   { background-image: url("img/alltayf-farm.png"); }
+.tayf-build  { background-image: url("img/alltayf-build.png"); }
+.tayf-stone  { background-image: url("img/alltayf-stone.png"); }
+.tayf-energy { background-image: url("img/alltayf-energy.png"); }
+.tayf-drill  { background-image: url("img/alltayf-drill.png"); }
+.tayf-tech   { background-image: url("img/alltayf-tech.png"); }
+.tayf-event  { background-image: url("img/alltayf-event.png"); }
+.tayf-aura   { background-image: url("img/alltayf-aura.png"); }
+.tayf-triad  { background-image: url("img/alltayf-triad.png"); }
 
 /* Footer */
 .foot{
@@ -168,7 +184,6 @@ body{
   display:grid;
   grid-template-columns: 1.1fr .9fr;
   gap:12px;
-
   max-height: calc(92vh - 56px);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
@@ -211,7 +226,6 @@ body{
   border-radius:16px;
   background:rgba(255,255,255,.03);
   padding:12px;
-  padding-bottom: 120px; /* Alt ödeme barı için alan */
 }
 .row2{
   display:grid;
@@ -240,7 +254,6 @@ input:focus,select:focus{
   display:flex; align-items:center; justify-content:space-between; gap:12px;
   border:1px solid rgba(255,255,255,.10);
   border-radius:16px;
-  background: rgba(0,0,0,.22);
   padding:12px;
   margin-top:10px;
 
@@ -265,52 +278,21 @@ input:focus,select:focus{
 .warn{margin-top:10px; color:rgba(255,220,220,.85); font-size:13px}
 .muted{color:var(--muted); font-size:12px}
 
-/* SABİT ALT BAR */
-.paybar {
-  position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  z-index: 999;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(10,10,12,.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--stroke2);
-  box-shadow: var(--shadow2);
-}
-
-.paybar-label {
+/* Manifest */
+.manifest{
+  margin-top:10px;
+  display:none;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  background: rgba(255,255,255,.04);
+  padding:10px 12px;
+  color: rgba(255,255,255,.82);
   font-size: 12px;
-  color: var(--muted);
+  line-height: 1.35;
 }
+.manifest span{display:block}
+.manifest.show{display:block}
 
-.paybar-total {
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.paybar-btn {
-  border: none;
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-weight: 800;
-  cursor: pointer;
-  background: #fff;
-  color: #000;
-}
-
-.paybar-btn:active {
-  transform: scale(.98);
-}
-
-/* Responsive */
 @media (max-width: 980px){
   .grid10{grid-template-columns:repeat(3,1fr)}
   .modal-body{grid-template-columns:1fr}
@@ -320,16 +302,8 @@ input:focus,select:focus{
   .row2{grid-template-columns:1fr}
   .bar-inner{flex-direction:column; align-items:flex-start}
   .bar-link{width:100%; text-align:center}
-
-  .summary{
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .pay{
-    width: 100%;
-    text-align: center;
-  }
+  .summary{flex-direction:column; align-items:stretch}
+  .pay{width:100%; text-align:center}
 }
 @media (max-width: 360px){
   .grid10{grid-template-columns:1fr}
