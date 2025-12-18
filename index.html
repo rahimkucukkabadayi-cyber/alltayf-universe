@@ -4,7 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ALLTAYF — Tayflar Kapısı</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- Cache kırmak için ?v=1 ekledim -->
+  <link rel="stylesheet" href="style.css?v=1" />
+
+  <!-- GARANTİ: Tayf görsellerini kesin bas -->
+  <style>
+    .card10-img{
+      background-size: cover !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      min-height: 160px; /* aspect-ratio bazı cihazlarda naz yaparsa diye */
+    }
+
+    .tayf-stay   { background-image: url("img/alltayf-stay.png?v=1") !important; }
+    .tayf-farm   { background-image: url("img/alltayf-farm.png?v=1") !important; }
+    .tayf-build  { background-image: url("img/alltayf-build.png?v=1") !important; }
+    .tayf-stone  { background-image: url("img/alltayf-stone.png?v=1") !important; }
+    .tayf-energy { background-image: url("img/alltayf-energy.png?v=1") !important; }
+    .tayf-drill  { background-image: url("img/alltayf-drill.png?v=1") !important; }
+    .tayf-tech   { background-image: url("img/alltayf-tech.png?v=1") !important; }
+    .tayf-event  { background-image: url("img/alltayf-event.png?v=1") !important; }
+    .tayf-aura   { background-image: url("img/alltayf-aura.png?v=1") !important; }
+    .tayf-triad  { background-image: url("img/alltayf-triad.png?v=1") !important; }
+  </style>
 </head>
 
 <body>
@@ -137,7 +160,6 @@
 
     </section>
 
-    <!-- FOOTER -->
     <footer class="foot">
       <span>© <span id="y"></span> Alltayf</span>
       <a href="https://wa.me/905438495887" target="_blank" rel="noopener">
