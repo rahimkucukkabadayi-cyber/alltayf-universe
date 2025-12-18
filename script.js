@@ -2,11 +2,21 @@ const WA = "https://wa.me/905438495887?text=";
 const PRICE_PER_PERSON_PER_NIGHT = 1500;
 const MAX_GUESTS = 4;
 
-/* Gezegen bazlı fiyat — şimdilik hepsi 1500 */
+/* Gezegen bazlı fiyat (şimdilik hepsi 1500) — sonra tek tek değiştirebilirsin */
 const PLANET_PRICES = {
-  sun: 1500, moon: 1500, ship: 1500, antim: 1500,
-  mercury: 1500, venus: 1500, earth: 1500, mars: 1500,
-  jupiter: 1500, saturn: 1500, uranus: 1500, neptune: 1500, pluto: 1500,
+  sun: 1500,
+  moon: 1500,
+  ship: 1500,
+  antim: 1500,
+  mercury: 1500,
+  venus: 1500,
+  earth: 1500,
+  mars: 1500,
+  jupiter: 1500,
+  saturn: 1500,
+  uranus: 1500,
+  neptune: 1500,
+  pluto: 1500,
 };
 const getPriceFor = (id) => (PLANET_PRICES[id] ?? PRICE_PER_PERSON_PER_NIGHT);
 
@@ -19,7 +29,7 @@ function overlaps(aIn, aOut, bIn, bOut){
   const A2 = new Date(aOut+"T00:00:00").getTime();
   const B1 = new Date(bIn+"T00:00:00").getTime();
   const B2 = new Date(bOut+"T00:00:00").getTime();
-  return A1 < B2 && B1 < A2;
+  return A1 < B2 && B1 < A2; // [in,out) çakışma
 }
 function isRangeAvailable(planetId, inD, outD){
   const locks = readLocks();
@@ -47,42 +57,43 @@ const guests = document.getElementById("guests");
 const totalEl = document.getElementById("total");
 const warn = document.getElementById("warn");
 const form = document.getElementById("form");
-
-const payTotalEl = document.getElementById("payTotal") || document.querySelector(".paybar-total");
-const payBtn = document.getElementById("payBtn") || document.querySelector(".paybar-btn");
+const calcNote = document.getElementById("calcNote");
+const manifestEl = document.getElementById("manifest");
 
 let selectedPlanet = null;
 
-/* ====== Gezegenler ====== */
+/* ====== Gezegenler (kart kapak görselleri) ====== */
 const TINY_PLANETS = [
-  { id:"sun",   name:"Güneş",       mini:"Merkez", cls:"planet-sun" },
-  { id:"moon",  name:"Ay",          mini:"Yoldaş", cls:"planet-moon" },
-  { id:"ship",  name:"Uzay Gemisi", mini:"Geçit",  cls:"planet-ship" },
-  { id:"antim", name:"Antimadde",   mini:"Eşik",   cls:"planet-antim" },
+  { id:"sun",   name:"Güneş",       mini:"Merkez", cls:"planet-sun",   cover:"img/gunes.png" },
+  { id:"moon",  name:"Ay",          mini:"Yoldaş", cls:"planet-moon",  cover:"img/yildiz.png" },
+  { id:"ship",  name:"Uzay Gemisi", mini:"Geçit",  cls:"planet-ship",  cover:"img/uzay-gemisi.png" },
+  { id:"antim", name:"Antimadde",   mini:"Eşik",   cls:"planet-antim", cover:"img/antimadde.png" },
 
-  { id:"mercury", name:"Merkür",  mini:"Hız",   cls:"planet-mercury" },
-  { id:"venus",   name:"Venüs",   mini:"Sis",   cls:"planet-venus" },
-  { id:"earth",   name:"Dünya",   mini:"Yaşam", cls:"planet-earth" },
-  { id:"mars",    name:"Mars",    mini:"Ateş",  cls:"planet-mars" },
-  { id:"jupiter", name:"Jüpiter", mini:"Dev",   cls:"planet-jupiter" },
-  { id:"saturn",  name:"Satürn",  mini:"Halka", cls:"planet-saturn" },
-  { id:"uranus",  name:"Uranüs",  mini:"Soğuk", cls:"planet-uranus" },
-  { id:"neptune", name:"Neptün",  mini:"Derin", cls:"planet-neptune" },
-  { id:"pluto",   name:"Plüton",  mini:"Uzak",  cls:"planet-pluto" },
+  { id:"mercury", name:"Merkür",  mini:"Hız",   cls:"planet-mercury", cover:"img/alltayf-tech.png" },
+  { id:"venus",   name:"Venüs",   mini:"Sis",   cls:"planet-venus",   cover:"img/alltayf-aura.png" },
+  { id:"earth",   name:"Dünya",   mini:"Yaşam", cls:"planet-earth",   cover:"img/alltayf-farm.png" },
+  { id:"mars",    name:"Mars",    mini:"Ateş",  cls:"planet-mars",    cover:"img/alltayf-build.png" },
+  { id:"jupiter", name:"Jüpiter", mini:"Dev",   cls:"planet-jupiter", cover:"img/alltayf-event.png" },
+  { id:"saturn",  name:"Satürn",  mini:"Halka", cls:"planet-saturn",  cover:"img/alltayf-stone.png" },
+  { id:"uranus",  name:"Uranüs",  mini:"Soğuk", cls:"planet-uranus",  cover:"img/alltayf-energy.png" },
+  { id:"neptune", name:"Neptün",  mini:"Derin", cls:"planet-neptune", cover:"img/alltayf-triad.png" },
+  { id:"pluto",   name:"Plüton",  mini:"Uzak",  cls:"planet-pluto",   cover:"img/alltayf-drill.png" },
 ];
 
-/* ====== Foto seti: dosya yoksa bile kırılmasın ====== */
-function photoSet(){
-  const base = [
+/* ====== 4 foto seti (cover + 3 kozmik) ====== */
+function photoSet(p){
+  const core = p?.cover || "img/bg-universe.jpg";
+  const imgs = [core, "img/gunes.png", "img/uzay-gemisi.png", "img/antimadde.png"];
+  const overlays = [
     `linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55)), radial-gradient(circle at 35% 35%, rgba(255,255,255,.20), transparent 55%)`,
     `linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.60)), radial-gradient(circle at 70% 30%, rgba(255,255,255,.18), transparent 60%)`,
     `linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.58)), radial-gradient(circle at 50% 60%, rgba(255,255,255,.16), transparent 55%)`,
     `linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.62)), radial-gradient(circle at 25% 70%, rgba(255,255,255,.14), transparent 55%)`,
   ];
-  return base.map(g => `${g}, url("img/bg-universe.jpg")`);
+  return imgs.map((src, i)=> `${overlays[i]}, url("${src}")`);
 }
 
-/* ====== Tarih helpers ====== */
+/* ====== Tarih/hesap yardımcıları ====== */
 function isoToday(){
   const d=new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -104,7 +115,19 @@ function setWarn(msg, ok=false){
   warn.style.color = ok ? "rgba(180,255,210,.85)" : "rgba(255,220,220,.85)";
 }
 
-/* ====== Grid render ====== */
+/* ====== Manifest ====== */
+const MANIFEST_LINES = [
+  "Evren, kısa bir konaklamada bile iz bırakır.",
+  "Kapıyı açtığında zaman yavaşlar, sen merkeze geçersin."
+];
+function setManifest(show){
+  if(!manifestEl) return;
+  if(!show){ manifestEl.classList.remove("show"); manifestEl.innerHTML=""; return; }
+  manifestEl.innerHTML = `<span>${MANIFEST_LINES[0]}</span><span>${MANIFEST_LINES[1]}</span>`;
+  manifestEl.classList.add("show");
+}
+
+/* ====== Grid ====== */
 function renderStayGrid(){
   if(!planetGrid) return;
   planetGrid.innerHTML = "";
@@ -117,7 +140,7 @@ function renderStayGrid(){
         <span class="tag">${p.name.toUpperCase()}</span>
         <span class="mini">${p.mini}</span>
       </div>
-      <div class="card10-img ${p.cls}"></div>
+      <div class="card10-img" style="background-image:url('${p.cover}')"></div>
       <div class="card10-bot">Tiny house • seç ve incele</div>
     `;
     a.addEventListener("click",(e)=>{ e.preventDefault(); openPlanet(p); });
@@ -135,8 +158,9 @@ function openPlanet(p){
   if(checkout){ checkout.min = addDays(t,1); checkout.value = addDays(t,1); }
   if(guests) guests.value = "2";
 
-  const photos = photoSet();
+  const photos = photoSet(p);
   if(mainPic) mainPic.style.backgroundImage = photos[0];
+
   if(thumbs){
     thumbs.innerHTML = "";
     photos.forEach((bg, i)=>{
@@ -155,6 +179,7 @@ function openPlanet(p){
 function closeModal(){
   if(modal) modal.classList.remove("open");
   selectedPlanet = null;
+  setManifest(false);
 }
 if(mClose) mClose.addEventListener("click", closeModal);
 if(modal) modal.addEventListener("click",(e)=>{ if(e.target===modal) closeModal(); });
@@ -169,35 +194,34 @@ function recalc(){
 
   if(!inD || !outD){
     totalEl.textContent="0 TL";
-    if(payTotalEl) payTotalEl.textContent="0 TL";
     setWarn("Tarih seçmelisin.");
+    setManifest(false);
     return;
   }
 
   const nights = diffNights(inD,outD);
   if(nights<=0){
     totalEl.textContent="0 TL";
-    if(payTotalEl) payTotalEl.textContent="0 TL";
     setWarn("Çıkış tarihi girişten sonra olmalı.");
+    setManifest(false);
     return;
   }
 
   if(!isRangeAvailable(selectedPlanet.id, inD, outD)){
     totalEl.textContent="0 TL";
-    if(payTotalEl) payTotalEl.textContent="0 TL";
     setWarn("Bu tarihler dolu. Başka tarih seç.");
+    setManifest(false);
     return;
   }
 
   const price = getPriceFor(selectedPlanet.id);
   const total = nights * g * price;
 
-  const totalText = fmtTL(total);
-  totalEl.textContent = totalText;
-  if(payTotalEl) payTotalEl.textContent = totalText;
+  totalEl.textContent = fmtTL(total);
+  if(calcNote) calcNote.textContent = `Kişi başı gecelik ${fmtTL(price)}`;
 
-  document.getElementById("calcNote")?.textContent = `Kişi başı gecelik ${fmtTL(price)}`;
   setWarn(`Uygun ✔ ${nights} gece • ${g} kişi`, true);
+  setManifest(true);
 }
 
 if(checkin) checkin.addEventListener("change",()=>{
@@ -269,11 +293,6 @@ if(form){
     handlePaymentAssumed();
   });
 }
-if(payBtn){
-  payBtn.addEventListener("click",(e)=>{
-    e.preventDefault();
-    handlePaymentAssumed();
-  });
-}
 
+/* ====== Başlat ====== */
 if(planetGrid) renderStayGrid();
