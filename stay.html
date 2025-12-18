@@ -1,166 +1,321 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ALLTAYF STAY — Rezervasyon</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
+const WA = "https://wa.me/905438495887?text=";
+const PRICE_PER_PERSON_PER_NIGHT = 1500;
+const MAX_GUESTS = 4;
 
-<body>
-  <div class="bg"></div>
+/* ====== DOLU TARİH KİLİDİ (localStorage) ====== */
+const LOCK_KEY = "alltayf_stay_locked_ranges_v1";
+function readLocks(){
+  try { return JSON.parse(localStorage.getItem(LOCK_KEY) || "{}"); }
+  catch { return {}; }
+}
+function writeLocks(obj){
+  localStorage.setItem(LOCK_KEY, JSON.stringify(obj));
+}
+function overlaps(aIn, aOut, bIn, bOut){
+  const A1 = new Date(aIn+"T00:00:00").getTime();
+  const A2 = new Date(aOut+"T00:00:00").getTime();
+  const B1 = new Date(bIn+"T00:00:00").getTime();
+  const B2 = new Date(bOut+"T00:00:00").getTime();
+  return A1 < B2 && B1 < A2; // [in,out) çakışma
+}
+function isRangeAvailable(planetId, inD, outD){
+  const locks = readLocks();
+  const list = locks[planetId] || [];
+  for(const r of list){
+    if(overlaps(inD, outD, r.in, r.out)) return false;
+  }
+  return true;
+}
+function lockDatesAfterPayment(planetId, inD, outD){
+  const locks = readLocks();
+  if(!locks[planetId]) locks[planetId] = [];
+  locks[planetId].push({ in: inD, out: outD });
+  writeLocks(locks);
+}
 
-  <header class="bar">
-    <div class="wrap bar-inner">
-      <div class="bar-left">
-        <div class="bar-title">ALLTAYF STAY</div>
-        <div class="bar-sub">Gezegen seç → fotoğraflar → tarih + kişi → ödeme</div>
+/* ====== Index: data-wa (varsa) ====== */
+document.querySelectorAll("[data-wa]").forEach(el=>{
+  el.addEventListener("click",(e)=>{
+    e.preventDefault();
+    const name = el.getAttribute("data-wa") || "Alltayf";
+    const msg = encodeURIComponent(`Selam Rahim, ${name} hakkında bilgi almak istiyorum.`);
+    window.open(WA + msg, "_blank", "noopener");
+  });
+});
+
+/* ====== Stay sayfası elemanları ====== */
+const planetGrid = document.getElementById("planetGrid");
+const modal = document.getElementById("modal");
+const mTitle = document.getElementById("mTitle");
+const mClose = document.getElementById("mClose");
+const mainPic = document.getElementById("mainPic");
+const thumbs = document.getElementById("thumbs");
+
+const checkin = document.getElementById("checkin");
+const checkout = document.getElementById("checkout");
+const guests = document.getElementById("guests");
+const totalEl = document.getElementById("total");
+const warn = document.getElementById("warn");
+const form = document.getElementById("form");
+
+// Sabit alt bar toplam (id çakışsa bile çalışsın)
+const payTotalEl = document.getElementById("payTotal") || document.querySelector(".paybar-total");
+
+// Eğer ayrı buton kullandıysan desteklesin
+const payBtn = document.getElementById("payBtn");
+
+let selectedPlanet = null;
+
+/* ====== Tiny house gezegenleri + özel kartlar (cover görseller bağlı) ====== */
+const TINY_PLANETS = [
+  // ÖZEL KARTLAR
+  { id:"sun",      name:"Güneş",       mini:"Merkez", cls:"planet-sun",    cover:"img/gunes.png" },
+  { id:"moon",     name:"Ay",          mini:"Yoldaş", cls:"planet-moon",   cover:"img/yildiz.png" }, // şimdilik
+  { id:"ship",     name:"Uzay Gemisi", mini:"Geçit",  cls:"planet-ship",   cover:"img/uzay-gemisi.png" },
+  { id:"antim",    name:"Antimadde",   mini:"Eşik",   cls:"planet-antim",  cover:"img/antimadde.png" },
+
+  // GEZEGENLER (elindeki alltayf görselleri ile)
+  { id:"mercury", name:"Merkür",  mini:"Hız",   cls:"planet-mercury", cover:"img/alltayf-tech.png" },
+  { id:"venus",   name:"Venüs",   mini:"Sis",   cls:"planet-venus",   cover:"img/alltayf-aura.png" },
+  { id:"earth",   name:"Dünya",   mini:"Yaşam", cls:"planet-earth",   cover:"img/alltayf-farm.png" },
+  { id:"mars",    name:"Mars",    mini:"Ateş",  cls:"planet-mars",    cover:"img/alltayf-build.png" },
+  { id:"jupiter", name:"Jüpiter", mini:"Dev",   cls:"planet-jupiter", cover:"img/alltayf-event.png" },
+  { id:"saturn",  name:"Satürn",  mini:"Halka", cls:"planet-saturn",  cover:"img/alltayf-stone.png" },
+  { id:"uranus",  name:"Uranüs",  mini:"Soğuk", cls:"planet-uranus",  cover:"img/alltayf-energy.png" },
+  { id:"neptune", name:"Neptün",  mini:"Derin", cls:"planet-neptune", cover:"img/alltayf-triad.png" },
+  { id:"pluto",   name:"Plüton",  mini:"Uzak",  cls:"planet-pluto",   cover:"img/alltayf-drill.png" },
+];
+
+/* ====== 4 foto seti ======
+   - Her gezegen için: 1) kendi cover'ı + 3 kozmik görsel
+   - Arka plan dosyan: img/bg-universe.jpg
+*/
+function photoSet(p){
+  const core = p?.cover || "img/bg-universe.jpg";
+  const imgs = [
+    core,
+    "img/gunes.png",
+    "img/uzay-gemisi.png",
+    "img/antimadde.png",
+  ];
+
+  const overlays = [
+    `linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55)), radial-gradient(circle at 35% 35%, rgba(255,255,255,.20), transparent 55%)`,
+    `linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.60)), radial-gradient(circle at 70% 30%, rgba(255,255,255,.18), transparent 60%)`,
+    `linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.58)), radial-gradient(circle at 50% 60%, rgba(255,255,255,.16), transparent 55%)`,
+    `linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.62)), radial-gradient(circle at 25% 70%, rgba(255,255,255,.14), transparent 55%)`,
+  ];
+
+  return imgs.map((src, i)=> `${overlays[i]}, url("${src}")`);
+}
+
+/* ====== Tarih/hesap yardımcıları ====== */
+function isoToday(){
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function addDays(iso, n){
+  const d=new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+n);
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function diffNights(a,b){
+  const d1=new Date(a+"T00:00:00");
+  const d2=new Date(b+"T00:00:00");
+  return Math.round((d2-d1)/(1000*60*60*24));
+}
+function fmtTL(n){ return new Intl.NumberFormat("tr-TR").format(n) + " TL"; }
+
+function setWarn(msg, ok=false){
+  if(!warn) return;
+  warn.textContent = msg;
+  warn.style.color = ok ? "rgba(180,255,210,.85)" : "rgba(255,220,220,.85)";
+}
+
+/* ====== Grid ====== */
+function renderStayGrid(){
+  if(!planetGrid) return;
+  planetGrid.innerHTML = "";
+  TINY_PLANETS.forEach(p=>{
+    const a=document.createElement("a");
+    a.className="card10";
+    a.href="#";
+
+    const bgStyle = p.cover ? `background-image:url('${p.cover}')` : "";
+
+    a.innerHTML=`
+      <div class="card10-top">
+        <span class="tag">${p.name.toUpperCase()}</span>
+        <span class="mini">${p.mini}</span>
       </div>
-      <a class="bar-link" href="index.html">← Ana Sayfa</a>
-    </div>
-  </header>
+      <div class="card10-img ${p.cls}" style="${bgStyle}"></div>
+      <div class="card10-bot">Tiny house • seç ve incele</div>
+    `;
+    a.addEventListener("click",(e)=>{ e.preventDefault(); openPlanet(p); });
+    planetGrid.appendChild(a);
+  });
+}
 
-  <main class="wrap">
-    <section class="hero">
-      <div class="hero-title">Gezegenini Seç</div>
-      <div class="hero-desc">Tiny house gezegenini seçince 4 foto + rezervasyon paneli açılır.</div>
-    </section>
+/* ====== Modal aç/kapat ====== */
+function openPlanet(p){
+  selectedPlanet = p;
+  if(mTitle) mTitle.textContent = `${p.name} — Rezervasyon`;
 
-    <section class="grid10" id="planetGrid" aria-label="Gezegenler"></section>
+  const t = isoToday();
+  if(checkin){
+    checkin.min = t;
+    checkin.value = t;
+  }
+  if(checkout){
+    checkout.min = addDays(t,1);
+    checkout.value = addDays(t,1);
+  }
+  if(guests) guests.value = "2";
 
-    <!-- Modal -->
-    <div class="modal" id="modal" aria-hidden="true">
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-        <div class="modal-head">
-          <div class="modal-title" id="mTitle">Gezegen</div>
-          <button class="x" id="mClose" type="button" aria-label="Kapat">Kapat</button>
-        </div>
+  const photos = photoSet(p);
+  if(mainPic) mainPic.style.backgroundImage = photos[0];
 
-        <div class="modal-body">
-          <!-- Sol: 4 foto -->
-          <div class="gallery">
-            <div class="mainpic" id="mainPic" aria-label="Ana fotoğraf"></div>
-            <div class="thumbs" id="thumbs" aria-label="Fotoğraf küçük resimleri"></div>
-          </div>
+  if(thumbs){
+    thumbs.innerHTML = "";
+    photos.forEach((bg, i)=>{
+      const d=document.createElement("div");
+      d.className="thumb";
+      d.style.backgroundImage = bg;
+      d.title = `Fotoğraf ${i+1}`;
+      d.addEventListener("click", ()=> { if(mainPic) mainPic.style.backgroundImage = bg; });
+      thumbs.appendChild(d);
+    });
+  }
 
-          <!-- Sağ: Form -->
-          <form class="form" id="form" autocomplete="on">
-            <div class="row2">
-              <div class="field">
-                <label for="checkin">Giriş Tarihi</label>
-                <input type="date" id="checkin" required>
-              </div>
-              <div class="field">
-                <label for="checkout">Çıkış Tarihi</label>
-                <input type="date" id="checkout" required>
-              </div>
-            </div>
+  recalc();
+  if(modal) modal.classList.add("open");
+}
 
-            <div class="row2">
-              <div class="field">
-                <label for="guests">Kişi Sayısı</label>
-                <select id="guests" required>
-                  <option value="1">1</option>
-                  <option value="2" selected>2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="phone">Telefon</label>
-                <input id="phone" type="tel" inputmode="tel" placeholder="05xx..." required>
-              </div>
-            </div>
+function closeModal(){
+  if(modal) modal.classList.remove("open");
+  selectedPlanet = null;
+}
 
-            <div class="row2">
-              <div class="field">
-                <label for="fullname">Ad Soyad</label>
-                <input id="fullname" type="text" placeholder="Ad Soyad" required>
-              </div>
-              <div class="field">
-                <label for="email">E-posta</label>
-                <input id="email" type="email" placeholder="mail@..." required>
-              </div>
-            </div>
+if(mClose) mClose.addEventListener("click", closeModal);
+if(modal) modal.addEventListener("click",(e)=>{ if(e.target===modal) closeModal(); });
 
-            <div class="row2">
-              <div class="field">
-                <label for="tc">TC Kimlik No</label>
-                <input id="tc" type="text" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" placeholder="11 hane" required>
-              </div>
-              <div class="field">
-                <label for="address">Adres</label>
-                <input id="address" type="text" placeholder="İl/İlçe/Mahalle..." required>
-              </div>
-            </div>
+/* ====== Hesaplama + doluluk kontrolü ====== */
+function recalc(){
+  if(!selectedPlanet) return;
+  if(!checkin || !checkout || !guests || !totalEl) return;
 
-            <div class="summary">
-              <div class="sum-left">
-                <div class="muted">Toplam Tutar</div>
-                <div class="total" id="total">0 TL</div>
-                <div class="muted" id="calcNote">Kişi başı gecelik 1.500 TL</div>
-              </div>
-            </div>
+  const inD = checkin.value;
+  const outD = checkout.value;
+  const gRaw = parseInt(guests.value||"1",10);
+  const g = Math.max(1, Math.min(gRaw, MAX_GUESTS));
 
-            <div class="warn" id="warn">Tarih seçince toplam otomatik hesaplanır.</div>
-          </form>
-        </div>
-      </div>
-    </div>
+  if(!inD || !outD){
+    totalEl.textContent="0 TL";
+    if(payTotalEl) payTotalEl.textContent = "0 TL";
+    setWarn("Tarih seçmelisin.");
+    return;
+  }
 
-    <footer class="foot">
-      <span>© <span id="y"></span> Alltayf Stay</span>
-      <a href="https://wa.me/905438495887" target="_blank" rel="noopener">WhatsApp</a>
-    </footer>
+  const nights = diffNights(inD,outD);
+  if(nights<=0){
+    totalEl.textContent="0 TL";
+    if(payTotalEl) payTotalEl.textContent = "0 TL";
+    setWarn("Çıkış tarihi girişten sonra olmalı.");
+    return;
+  }
 
-    <!-- SABİT ALT ÖDEME BAR -->
-    <div class="paybar">
-      <div class="paybar-left">
-        <div class="paybar-label">Toplam Tutar</div>
-        <div class="paybar-total" id="payTotal">0 TL</div>
-      </div>
+  if(!isRangeAvailable(selectedPlanet.id, inD, outD)){
+    totalEl.textContent="0 TL";
+    if(payTotalEl) payTotalEl.textContent = "0 TL";
+    setWarn("Bu tarihler dolu. Başka tarih seç.");
+    return;
+  }
 
-      <!-- type=button: form submit olmasın, script.js yönetsin -->
-      <button class="paybar-btn" type="button" id="payBtn">
-        Kapıyı Aç (Ödeme Yap)
-      </button>
-    </div>
+  const total = nights * g * PRICE_PER_PERSON_PER_NIGHT;
+  const t = fmtTL(total);
+  totalEl.textContent = t;
+  if(payTotalEl) payTotalEl.textContent = t;
 
-  </main>
+  setWarn(`Uygun ✔ ${nights} gece • ${g} kişi`, true);
+}
 
-  <script src="script.js"></script>
-  <script>
-    document.getElementById("y").textContent = new Date().getFullYear();
-  </script>
+if(checkin) checkin.addEventListener("change",()=>{
+  const minOut = addDays(checkin.value,1);
+  if(checkout){
+    checkout.min = minOut;
+    if(checkout.value < minOut) checkout.value = minOut;
+  }
+  recalc();
+});
+if(checkout) checkout.addEventListener("change", recalc);
+if(guests) guests.addEventListener("change", recalc);
 
-  <script>
-    const MANIFEST_LINES = [
-      "Evren, kısa bir konaklamada bile iz bırakır.",
-      "Kapıyı açtığında zaman yavaşlar, sen merkeze geçersin."
-    ];
+/* ====== Ödeme varsay + kilitle + WhatsApp ====== */
+function handlePaymentAssumed(){
+  if(!selectedPlanet) return;
 
-    function injectManifest() {
-      document.querySelectorAll("*").forEach(el => {
-        const text = el.textContent?.trim();
-        if (text === "Uygun ✓ 1 gece · 2 kişi" || text === "Uygun / 1 gece · 2 kişi") {
+  const inD = checkin?.value;
+  const outD = checkout?.value;
+  if(!inD || !outD){ setWarn("Tarih seçmelisin."); return; }
 
-          if (el.nextElementSibling?.classList?.contains("manifest")) return;
+  const nights = diffNights(inD, outD);
+  if(nights<=0){ setWarn("Çıkış tarihi girişten sonra olmalı."); return; }
 
-          const manifest = document.createElement("div");
-          manifest.className = "manifest";
-          manifest.innerHTML = `
-            <span>${MANIFEST_LINES[0]}</span>
-            <span>${MANIFEST_LINES[1]}</span>
-          `;
+  if(!isRangeAvailable(selectedPlanet.id, inD, outD)){
+    setWarn("Bu tarihler dolu. Başka tarih seç.");
+    return;
+  }
 
-          el.insertAdjacentElement("afterend", manifest);
-        }
-      });
-    }
+  const fullname = document.getElementById("fullname")?.value?.trim() || "";
+  const email = document.getElementById("email")?.value?.trim() || "";
+  const phone = document.getElementById("phone")?.value?.trim() || "";
+  const tc = document.getElementById("tc")?.value?.trim() || "";
+  const address = document.getElementById("address")?.value?.trim() || "";
 
-    document.addEventListener("DOMContentLoaded", injectManifest);
-    setTimeout(injectManifest, 500);
-    setTimeout(injectManifest, 1500);
-  </script>
-</body>
-</html>
+  if(tc && tc.length !== 11){ setWarn("TC Kimlik No 11 hane olmalı."); return; }
+
+  // KİLİTLE
+  lockDatesAfterPayment(selectedPlanet.id, inD, outD);
+
+  alert("Ödeme alındı varsayıldı ✅\nTarihler kilitlendi.");
+
+  const msg = encodeURIComponent(
+    `ÖDEME ALINDI ✅\n`+
+    `Gezegen: ${selectedPlanet.name}\n`+
+    `Giriş: ${inD}\n`+
+    `Çıkış: ${outD}\n`+
+    `Kişi: ${guests?.value || ""}\n`+
+    (fullname ? `Ad Soyad: ${fullname}\n` : "")+
+    (email ? `E-posta: ${email}\n` : "")+
+    (phone ? `Telefon: ${phone}\n` : "")+
+    (tc ? `TC: ${tc}\n` : "")+
+    (address ? `Adres: ${address}\n` : "")+
+    `Toplam: ${totalEl?.textContent || ""}`
+  );
+  window.open(WA + msg, "_blank", "noopener");
+
+  closeModal();
+  renderStayGrid();
+}
+
+if(form){
+  form.addEventListener("submit",(e)=>{
+    e.preventDefault();
+    handlePaymentAssumed();
+  });
+}
+if(payBtn){
+  payBtn.addEventListener("click",(e)=>{
+    e.preventDefault();
+    handlePaymentAssumed();
+  });
+}
+
+/* ====== Başlat ====== */
+if(planetGrid) renderStayGrid();
