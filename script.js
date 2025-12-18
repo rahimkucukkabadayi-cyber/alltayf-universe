@@ -58,34 +58,55 @@ const totalEl = document.getElementById("total");
 const warn = document.getElementById("warn");
 const form = document.getElementById("form");
 
+// Sabit alt bar toplam (id çakışsa bile çalışsın)
+const payTotalEl = document.getElementById("payTotal") || document.querySelector(".paybar-total");
+
 // Eğer ayrı buton kullandıysan desteklesin
 const payBtn = document.getElementById("payBtn");
 
 let selectedPlanet = null;
 
-/* ====== Tiny house gezegenleri ====== */
+/* ====== Tiny house gezegenleri + özel kartlar (cover görseller bağlı) ====== */
 const TINY_PLANETS = [
-  { id:"mercury", name:"Merkür", mini:"Hız",   cls:"planet-mercury" },
-  { id:"venus",   name:"Venüs",  mini:"Sis",   cls:"planet-venus" },
-  { id:"earth",   name:"Dünya",  mini:"Yaşam", cls:"planet-earth" },
-  { id:"mars",    name:"Mars",   mini:"Ateş",  cls:"planet-mars" },
-  { id:"jupiter", name:"Jüpiter",mini:"Dev",   cls:"planet-jupiter" },
-  { id:"saturn",  name:"Satürn", mini:"Halka", cls:"planet-saturn" },
-  { id:"uranus",  name:"Uranüs", mini:"Soğuk", cls:"planet-uranus" },
-  { id:"neptune", name:"Neptün", mini:"Derin", cls:"planet-neptune" },
-  { id:"pluto",   name:"Plüton", mini:"Uzak",  cls:"planet-pluto" },
+  // ÖZEL KARTLAR
+  { id:"sun",      name:"Güneş",       mini:"Merkez", cls:"planet-sun",    cover:"img/gunes.png" },
+  { id:"moon",     name:"Ay",          mini:"Yoldaş", cls:"planet-moon",   cover:"img/yildiz.png" }, // şimdilik
+  { id:"ship",     name:"Uzay Gemisi", mini:"Geçit",  cls:"planet-ship",   cover:"img/uzay-gemisi.png" },
+  { id:"antim",    name:"Antimadde",   mini:"Eşik",   cls:"planet-antim",  cover:"img/antimadde.png" },
+
+  // GEZEGENLER (elindeki alltayf görselleri ile)
+  { id:"mercury", name:"Merkür",  mini:"Hız",   cls:"planet-mercury", cover:"img/alltayf-tech.png" },
+  { id:"venus",   name:"Venüs",   mini:"Sis",   cls:"planet-venus",   cover:"img/alltayf-aura.png" },
+  { id:"earth",   name:"Dünya",   mini:"Yaşam", cls:"planet-earth",   cover:"img/alltayf-farm.png" },
+  { id:"mars",    name:"Mars",    mini:"Ateş",  cls:"planet-mars",    cover:"img/alltayf-build.png" },
+  { id:"jupiter", name:"Jüpiter", mini:"Dev",   cls:"planet-jupiter", cover:"img/alltayf-event.png" },
+  { id:"saturn",  name:"Satürn",  mini:"Halka", cls:"planet-saturn",  cover:"img/alltayf-stone.png" },
+  { id:"uranus",  name:"Uranüs",  mini:"Soğuk", cls:"planet-uranus",  cover:"img/alltayf-energy.png" },
+  { id:"neptune", name:"Neptün",  mini:"Derin", cls:"planet-neptune", cover:"img/alltayf-triad.png" },
+  { id:"pluto",   name:"Plüton",  mini:"Uzak",  cls:"planet-pluto",   cover:"img/alltayf-drill.png" },
 ];
 
-/* ====== 4 foto (şimdilik placeholder) ====== */
-/* NOT: Eğer senin bg dosyan img/bg-universe.jpg ise alttaki yolu değiştir: url("img/bg-universe.jpg") */
-function photoSet(){
-  const base = [
+/* ====== 4 foto seti ======
+   - Her gezegen için: 1) kendi cover'ı + 3 kozmik görsel
+   - Arka plan dosyan: img/bg-universe.jpg
+*/
+function photoSet(p){
+  const core = p?.cover || "img/bg-universe.jpg";
+  const imgs = [
+    core,
+    "img/gunes.png",
+    "img/uzay-gemisi.png",
+    "img/antimadde.png",
+  ];
+
+  const overlays = [
     `linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55)), radial-gradient(circle at 35% 35%, rgba(255,255,255,.20), transparent 55%)`,
     `linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.60)), radial-gradient(circle at 70% 30%, rgba(255,255,255,.18), transparent 60%)`,
     `linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.58)), radial-gradient(circle at 50% 60%, rgba(255,255,255,.16), transparent 55%)`,
     `linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.62)), radial-gradient(circle at 25% 70%, rgba(255,255,255,.14), transparent 55%)`,
   ];
-  return base.map(g => `${g}, url("bg-universe.jpg")`);
+
+  return imgs.map((src, i)=> `${overlays[i]}, url("${src}")`);
 }
 
 /* ====== Tarih/hesap yardımcıları ====== */
@@ -125,12 +146,15 @@ function renderStayGrid(){
     const a=document.createElement("a");
     a.className="card10";
     a.href="#";
+
+    const bgStyle = p.cover ? `background-image:url('${p.cover}')` : "";
+
     a.innerHTML=`
       <div class="card10-top">
         <span class="tag">${p.name.toUpperCase()}</span>
         <span class="mini">${p.mini}</span>
       </div>
-      <div class="card10-img ${p.cls}"></div>
+      <div class="card10-img ${p.cls}" style="${bgStyle}"></div>
       <div class="card10-bot">Tiny house • seç ve incele</div>
     `;
     a.addEventListener("click",(e)=>{ e.preventDefault(); openPlanet(p); });
@@ -154,7 +178,7 @@ function openPlanet(p){
   }
   if(guests) guests.value = "2";
 
-  const photos = photoSet();
+  const photos = photoSet(p);
   if(mainPic) mainPic.style.backgroundImage = photos[0];
 
   if(thumbs){
@@ -191,19 +215,33 @@ function recalc(){
   const gRaw = parseInt(guests.value||"1",10);
   const g = Math.max(1, Math.min(gRaw, MAX_GUESTS));
 
-  if(!inD || !outD){ totalEl.textContent="0 TL"; setWarn("Tarih seçmelisin."); return; }
+  if(!inD || !outD){
+    totalEl.textContent="0 TL";
+    if(payTotalEl) payTotalEl.textContent = "0 TL";
+    setWarn("Tarih seçmelisin.");
+    return;
+  }
 
   const nights = diffNights(inD,outD);
-  if(nights<=0){ totalEl.textContent="0 TL"; setWarn("Çıkış tarihi girişten sonra olmalı."); return; }
+  if(nights<=0){
+    totalEl.textContent="0 TL";
+    if(payTotalEl) payTotalEl.textContent = "0 TL";
+    setWarn("Çıkış tarihi girişten sonra olmalı.");
+    return;
+  }
 
   if(!isRangeAvailable(selectedPlanet.id, inD, outD)){
     totalEl.textContent="0 TL";
+    if(payTotalEl) payTotalEl.textContent = "0 TL";
     setWarn("Bu tarihler dolu. Başka tarih seç.");
     return;
   }
 
   const total = nights * g * PRICE_PER_PERSON_PER_NIGHT;
-  totalEl.textContent = fmtTL(total);
+  const t = fmtTL(total);
+  totalEl.textContent = t;
+  if(payTotalEl) payTotalEl.textContent = t;
+
   setWarn(`Uygun ✔ ${nights} gece • ${g} kişi`, true);
 }
 
