@@ -14,13 +14,12 @@ html,body{height:100%}
 body{
   margin:0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: url("img/bg-universe2.jpg") center / cover no-repeat fixed;
-  color:#fff;
+  background: url("img/bg-universe.jpg") center / cover no-repeat fixed;  color:#fff;
 }
 
 .bg{
   position:fixed; inset:0; z-index:-1;
-  background: url("img/bg-universe2.jpg") center / cover no-repeat fixed;
+  background: url("img/bg-universe.jpg") center / cover no-repeat fixed;
 }
 
 .wrap{width:min(1100px, 92vw); margin:0 auto; padding:0 0}
