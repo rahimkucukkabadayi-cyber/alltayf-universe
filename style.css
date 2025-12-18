@@ -334,3 +334,21 @@ input:focus,select:focus{
 @media (max-width: 360px){
   .grid10{grid-template-columns:1fr}
 }
+/* === INDEX: TAYF KART GÖRSELLERİ (EN ALTA) === */
+.card10-img{
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Tayf görselleri */
+.tayf-stay   { background-image: url("img/alltayf-stay.png"); }
+.tayf-farm   { background-image: url("img/alltayf-farm.png"); }
+.tayf-build  { background-image: url("img/alltayf-build.png"); }
+.tayf-stone  { background-image: url("img/alltayf-stone.png"); }
+.tayf-energy { background-image: url("img/alltayf-energy.png"); }
+.tayf-drill  { background-image: url("img/alltayf-drill.png"); }
+.tayf-tech   { background-image: url("img/alltayf-tech.png"); }
+.tayf-event  { background-image: url("img/alltayf-event.png"); }
+.tayf-aura   { background-image: url("img/alltayf-aura.png"); }
+.tayf-triad  { background-image: url("img/alltayf-triad.png"); }
